@@ -11,6 +11,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Slash Configuration
+
 APPEND_SLASH = True
 
 # Custom user model
