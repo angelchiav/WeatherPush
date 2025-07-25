@@ -50,6 +50,46 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+    
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(
+        write_only=True,
+        style={'input_type': 'password'}
+    )
+    remember_me = serializers.BooleanField(default=False)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if email and password:
+            user = authenticate(
+                request=self.context.get('request'),
+                username=email,  # Django usa username, pero nosotros sobrescribimos `USERNAME_FIELD = 'email'`
+                password=password
+            )
+
+            if not user:
+                raise serializers.ValidationError({
+                    'detail': "Invalid email or password."
+                })
+            if not user.is_active:
+                raise serializers.ValidationError({
+                    'detail': "This account is inactive."
+                })
+            if not user.is_email_verified:
+                raise serializers.ValidationError({
+                    'detail': "Please verify your email before logging in."
+                })
+
+            attrs['user'] = user
+            return attrs
+
+        raise serializers.ValidationError({
+            'detail': "Must include 'email' and 'password'."
+        })
 
 class UserProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
@@ -139,5 +179,4 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         self.token_obj.is_used = True
         self.token_obj.save()
         return user
-    
     
