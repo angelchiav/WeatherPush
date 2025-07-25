@@ -85,4 +85,59 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class EmailVerificationTokenSerializer(serializers.ModelSerializer):
     token = serializers.UUIDField()
 
+    def validate_token(self, value):
+        try:
+            token_obj = EmailVerificationToken.objects.get(token=value)
+        except EmailVerificationToken.DoesNotExist:
+            raise serializers.ValidationError("Invalid token")
+        
+        if not token_obj.is_valid:
+            raise serializers.ValidationError("Token expired of used")
+        
+        self.token_obj = token_obj
+        return value
+    
+    def save(self):
+        user = self.token_obj.user
+        user.is_email_verified = True
+        user.save()
+        self.token_obj.is_used = True
+        self.token_obj.save()
+        return user
+    
+class PasswordResetSerializer(serializers.ModelSerializer):
+    token = serializers.UUIDField()
+    new_password = serializers.CharField(
+        write_only=True, style={'input_style': 'password'},
+        validators=[validate_password]
+    )
+    confirm_password = serializers.CharField(
+        write_only=True, style={'input_style': 'password'}
+    )
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({'new_password': 'Passwords do not match'})
+        return attrs
+    
+    def validate_token(self, value):
+        try:
+            token_obj = PasswordResetToken.objects.get(user=value)
+        except PasswordResetToken.DoesNotExist:
+            raise serializers.ValidationError("Invalid token")
+        
+        if not token_obj.is_valid:
+            raise serializers.ValidationError("Token expired or used")
+        
+        self.token_obj = token_obj
+        return value
+    
+    def save(self):
+        user = self.token_obj.user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        self.token_obj.is_used = True
+        self.token_obj.save()
+        return user
+    
     
