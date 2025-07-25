@@ -13,15 +13,15 @@ router = DefaultRouter()
 router.register(r'me', UserViewSet, basename='me')
 
 urlpatterns = [
-    path('register/', RegistrationView.as_view(), name='register'),
+    path('/register/', RegistrationView.as_view(), name='register'),
 
-    path('login/', LoginView.as_view(), name='login'),
+    path('/login/', LoginView.as_view(), name='login'),
 
-    path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
+    path('/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('verify-email/', EmailVerificationView.as_view(), name='verify_email'),
+    path('/verify-email/', EmailVerificationView.as_view(), name='verify_email'),
 
-    path('reset-password/', PasswordResetView.as_view(), name='reset_password'),
+    path('/reset-password/', PasswordResetView.as_view(), name='reset_password'),
 
     path('', include(router.urls))
 ]

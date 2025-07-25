@@ -43,6 +43,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         attrs.pop('password2')
         attrs.pop('accept_terms')
         attrs.pop('accept_privacy')
+        return attrs
 
     def create(self, validated_data):
         password = validated_data.pop('password')

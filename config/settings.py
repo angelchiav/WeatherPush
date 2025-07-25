@@ -11,6 +11,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+APPEND_SLASH = True
+
 # Custom user model
 
 AUTH_USER_MODEL = 'users.User'
